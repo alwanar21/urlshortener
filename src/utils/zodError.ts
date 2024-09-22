@@ -1,4 +1,4 @@
-interface JoiErrorDetail {
+interface ZodErrorDetail {
   message: string;
   path: string[];
   type: string;
@@ -10,16 +10,14 @@ interface JoiErrorDetail {
 }
 
 interface ValidationError {
-  errors: JoiErrorDetail[];
+  errors: ZodErrorDetail[];
 }
 
 interface FormattedError {
   message: string;
 }
 
-export const formatJoiErrors = (
-  validationErrors: ValidationError
-): Record<string, FormattedError> => {
+export const formatZodErrors = (validationErrors: ValidationError): Record<string, FormattedError> => {
   return validationErrors.errors.reduce((acc, err) => {
     const path = err.path.join(".");
 

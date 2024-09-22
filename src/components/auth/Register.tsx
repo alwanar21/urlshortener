@@ -1,14 +1,14 @@
+import { z } from "zod";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
-import { registerUserValidation } from "../../validation/authValidation";
 import { useMutation } from "@tanstack/react-query";
-import { Register as userRegister } from "../../service/auth";
-import { toast } from "sonner";
-import { AxiosError } from "axios";
-import { formatJoiErrors } from "../../utils/joi";
+import { registerUserValidation } from "../../validation/auth-validation";
+import { Register as userRegister } from "../../service/auth-service";
+import { formatZodErrors } from "../../utils/zodError";
 
 interface authProps {
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
@@ -36,7 +36,7 @@ export default function Register({ setIsLogin }: authProps) {
     event.preventDefault();
   };
 
-  const mutation = useMutation({
+  const registerMutation = useMutation({
     mutationFn: userRegister,
     onSuccess: (data) => {
       toast.success(data?.data?.message);
@@ -45,7 +45,7 @@ export default function Register({ setIsLogin }: authProps) {
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.data?.errors) {
-          const formattedErrors = formatJoiErrors(error.response?.data);
+          const formattedErrors = formatZodErrors(error.response?.data);
           setError("username", formattedErrors.username);
           setError("password", formattedErrors.password);
           setError("confirmPassword", formattedErrors.confirmPassword);
@@ -70,7 +70,7 @@ export default function Register({ setIsLogin }: authProps) {
     resolver: zodResolver(registerUserValidation),
   });
   const onSubmit: SubmitHandler<registerUserType> = (data) => {
-    mutation.mutate(data);
+    registerMutation.mutate(data);
   };
 
   return (
@@ -91,7 +91,7 @@ export default function Register({ setIsLogin }: authProps) {
                 type="text"
                 placeholder="username"
                 className="grow"
-                disabled={mutation.isPending ? true : false}
+                disabled={registerMutation.isPending ? true : false}
                 {...register("username")}
                 required
               />
@@ -116,12 +116,10 @@ export default function Register({ setIsLogin }: authProps) {
                 onPaste={handlePreventAction}
                 className="grow"
                 placeholder="password"
-                disabled={mutation.isPending ? true : false}
+                disabled={registerMutation.isPending ? true : false}
                 {...register("password")}
               />
-              <button onClick={togglePasswordVisibility}>
-                {showPassword ? <IoIosEyeOff /> : <IoIosEye />}
-              </button>
+              <button onClick={togglePasswordVisibility}>{showPassword ? <IoIosEyeOff /> : <IoIosEye />}</button>
             </label>
             <div className="label">
               <span className="label-text-alt text-red-500">{errors.password?.message}</span>
@@ -140,7 +138,7 @@ export default function Register({ setIsLogin }: authProps) {
                 type={showConfirmPassword ? "text" : "password"}
                 className="grow"
                 placeholder="confirmation password"
-                disabled={mutation.isPending ? true : false}
+                disabled={registerMutation.isPending ? true : false}
                 {...register("confirmPassword")}
               />
               <button onClick={toggleConfirmPasswordVisibility}>
@@ -157,8 +155,8 @@ export default function Register({ setIsLogin }: authProps) {
             </label>
           </div>
           <div className="form-control mt-6">
-            <button className={`btn btn-primary ${mutation.isPending && "btn-disabled"}`}>
-              {mutation.isPending && <span className="loading loading-spinner"></span>}
+            <button className={`btn btn-primary ${registerMutation.isPending && "btn-disabled"}`}>
+              {registerMutation.isPending && <span className="loading loading-spinner"></span>}
               Register
             </button>
           </div>

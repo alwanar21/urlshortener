@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { loginUserValidation } from "../../validation/authValidation";
-import { Login as userLogin } from "../../service/auth";
+import { loginUserValidation } from "../../validation/auth-validation";
+import { Login as userLogin } from "../../service/auth-service";
 import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import { formatJoiErrors } from "../../utils/joi";
+import { formatZodErrors } from "../../utils/zodError";
 
 interface authProps {
   setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
@@ -32,7 +32,7 @@ export default function Login({ setIsLogin }: authProps) {
     setIsLogin(false);
   };
 
-  const mutation = useMutation({
+  const loginMutation = useMutation({
     mutationFn: userLogin,
     onSuccess: (data) => {
       if (
@@ -51,10 +51,9 @@ export default function Login({ setIsLogin }: authProps) {
     onError: (error) => {
       if (error instanceof AxiosError) {
         if (error.response?.data?.errors) {
-          const formattedErrors = formatJoiErrors(error.response?.data);
+          const formattedErrors = formatZodErrors(error.response?.data);
           setError("username", formattedErrors.username);
           setError("password", formattedErrors.password);
-          console.log(error.response?.data?.errors, "wkwkw");
         } else {
           const errorMessage = error.response?.data?.message || "An unknown error occurred";
           toast.error(errorMessage);
@@ -76,7 +75,7 @@ export default function Login({ setIsLogin }: authProps) {
     resolver: zodResolver(loginUserValidation),
   });
   const onSubmit: SubmitHandler<loginUserType> = (data) => {
-    mutation.mutate(data);
+    loginMutation.mutate(data);
   };
 
   return (
@@ -97,7 +96,7 @@ export default function Login({ setIsLogin }: authProps) {
                 type="text"
                 placeholder="username"
                 className="grow"
-                disabled={mutation.isPending ? true : false}
+                disabled={loginMutation.isPending ? true : false}
                 {...register("username")}
               />
             </label>
@@ -118,12 +117,10 @@ export default function Login({ setIsLogin }: authProps) {
                 type={showPassword ? "text" : "password"}
                 className="grow"
                 placeholder="********"
-                disabled={mutation.isPending ? true : false}
+                disabled={loginMutation.isPending ? true : false}
                 {...register("password")}
               />
-              <button onClick={togglePasswordVisibility}>
-                {showPassword ? <IoIosEyeOff /> : <IoIosEye />}
-              </button>
+              <button onClick={togglePasswordVisibility}>{showPassword ? <IoIosEyeOff /> : <IoIosEye />}</button>
             </label>
             <div className="label">
               <span className="label-text-alt text-red-500">{errors.password?.message}</span>
@@ -135,10 +132,10 @@ export default function Login({ setIsLogin }: authProps) {
             </label>
           </div>
           <div className="form-control mt-6">
-            <button className={`btn btn-primary ${mutation.isPending && "btn-disabled"}`}>
-              {mutation.isPending && <span className="loading loading-spinner"></span>}
+            <button className={`btn btn-primary ${loginMutation.isPending && "btn-disabled"}`}>
+              {loginMutation.isPending && <span className="loading loading-spinner"></span>}
               Login
-            </button>{" "}
+            </button>
           </div>
         </form>
       </div>

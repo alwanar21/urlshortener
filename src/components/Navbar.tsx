@@ -16,12 +16,18 @@ export default function Navbar() {
     navigate("/");
   };
 
-  const openModal = () => {
-    const modal = document.getElementById("my_modal_5") as HTMLDialogElement;
+  const openModalQuit = () => {
+    const modal = document.getElementById("modal_quit") as HTMLDialogElement;
     if (modal) {
       modal.showModal();
     }
   };
+
+  function getInitial(username: string = "") {
+    const words = username.split(" ");
+    const initials = words.map((word) => word.charAt(0).toUpperCase()).join("");
+    return initials;
+  }
 
   return (
     <>
@@ -32,15 +38,22 @@ export default function Navbar() {
           </Link>
         </div>
         <div className="navbar-end flex gap-2">
-          <p className="text-base ">{auth?.username}</p>
-          <button onClick={openModal} className="btn btn-error btn-sm text-white">
+          <div className="hidden sm:flex flex-row gap-2 justify-center items-center">
+            <div className="avatar placeholder">
+              <div className="bg-neutral text-neutral-content w-8 rounded-full">
+                <span className="text-xl">{getInitial(auth?.username)}</span>
+              </div>
+            </div>
+            <p className="text-base ">{auth?.username}</p>
+          </div>
+          <button onClick={openModalQuit} className="btn btn-error btn-sm text-white">
             Logout
           </button>
         </div>
       </div>
 
       {/* modal logout */}
-      <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
+      <dialog id="modal_quit" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
           <p className="py-4 text-xl">Are you sure you want to log out?</p>
           <div className="modal-action">
