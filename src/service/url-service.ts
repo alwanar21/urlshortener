@@ -5,8 +5,8 @@ import { createUrlValidation, updateUrlValidation } from "../validation/url-vali
 type CreateUrlType = z.infer<typeof createUrlValidation>;
 type UpdateUrlType = z.infer<typeof updateUrlValidation>;
 
-const getAll = async () => {
-  const result = await PrivateInstance("/api/urls");
+const getAll = async (page: string = "1") => {
+  const result = await PrivateInstance(`/api/urls?page=${page}`);
   return result.data;
 };
 
@@ -32,8 +32,16 @@ const update = async (id: number, body: UpdateUrlType) => {
 };
 
 const updateStatus = async (id: number) => {
-  const result = await PrivateInstance(`/api/url/${id}/status`);
+  const result = await PrivateInstance(`/api/url/${id}/status`, {
+    method: "patch",
+  });
+  return result.data;
+};
+const remove = async (id: number) => {
+  const result = await PrivateInstance(`/api/url/${id}`, {
+    method: "delete",
+  });
   return result.data;
 };
 
-export { getAll, get, create, update, updateStatus };
+export { getAll, get, create, update, updateStatus, remove };
