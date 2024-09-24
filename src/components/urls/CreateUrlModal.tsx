@@ -9,20 +9,25 @@ import { create } from "../../service/url-service";
 import { createUrlValidation } from "../../validation/url-validation";
 import { formatZodErrors } from "../../utils/zodError";
 import { useSearchParams } from "react-router-dom";
+import { useRef } from "react";
 
 export default function CreateUrlModal() {
   const [searchParams] = useSearchParams();
   const page = searchParams.get("page") || "1";
   const queryClient = useQueryClient();
-  const modal = document.getElementById("modal_add_url") as HTMLDialogElement;
+  const modalAddRef = useRef<HTMLDialogElement | null>(null); // Menggunakan useRef untuk modal
+
   const openModal = () => {
-    if (modal) {
-      modal.showModal();
+    if (modalAddRef.current) {
+      modalAddRef.current.showModal(); // Gunakan ref untuk membuka modal
     }
   };
 
   const closeModal = () => {
     reset();
+    if (modalAddRef.current) {
+      modalAddRef.current.close(); // Gunakan ref untuk menutup modal
+    }
   };
 
   type createUrlType = z.infer<typeof createUrlValidation>;
@@ -33,7 +38,7 @@ export default function CreateUrlModal() {
       toast.success(data.message);
       queryClient.invalidateQueries({ queryKey: ["urls", page] });
       reset();
-      modal.close();
+      closeModal();
     },
     onError: (error) => {
       if (error instanceof AxiosError) {
@@ -60,22 +65,22 @@ export default function CreateUrlModal() {
   } = useForm<createUrlType>({
     resolver: zodResolver(createUrlValidation),
   });
+
   const onSubmit: SubmitHandler<createUrlType> = (data) => {
     createUrlMutation.mutate(data);
-    console.log(data);
   };
 
   return (
     <>
       <button
-        className=" btn btn-sm btn-circle btn-ghost ml-auto border-gray-700 flex items-center justify-center my-5"
+        className="btn btn-sm btn-circle btn-ghost ml-auto border-gray-700 flex items-center justify-center my-5"
         onClick={openModal}
       >
         <FaPlus />
       </button>
 
       {/* create task modal */}
-      <dialog id="modal_add_url" className="modal modal-bottom sm:modal-middle">
+      <dialog ref={modalAddRef} id="modal_add_url" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
           <form method="dialog">
             <button onClick={closeModal} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
@@ -92,7 +97,7 @@ export default function CreateUrlModal() {
                 type="text"
                 placeholder="name"
                 className={`input input-bordered ${errors.name?.message && "input-bordered input-error"}`}
-                disabled={createUrlMutation.isPending ? true : false}
+                disabled={createUrlMutation.isPending}
                 {...register("name")}
               />
               <div className="label">
@@ -107,7 +112,7 @@ export default function CreateUrlModal() {
                 type="text"
                 placeholder="https://www.google.com"
                 className={`input input-bordered ${errors.redirectURL?.message && "input-bordered input-error"}`}
-                disabled={createUrlMutation.isPending ? true : false}
+                disabled={createUrlMutation.isPending}
                 {...register("redirectURL")}
               />
               <div className="label">
@@ -119,7 +124,7 @@ export default function CreateUrlModal() {
               <button className={`btn btn-primary ${createUrlMutation.isPending && "btn-disabled"}`}>
                 {createUrlMutation.isPending && <span className="loading loading-spinner"></span>}
                 Submit
-              </button>{" "}
+              </button>
             </div>
           </form>
         </div>

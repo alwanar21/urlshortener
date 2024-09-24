@@ -25,7 +25,7 @@ const create = async (body: CreateUrlType) => {
 
 const update = async (id: number, body: UpdateUrlType) => {
   const result = await PrivateInstance(`/api/url/${id}`, {
-    method: "post",
+    method: "patch",
     data: body,
   });
   return result.data;
@@ -37,6 +37,7 @@ const updateStatus = async (id: number) => {
   });
   return result.data;
 };
+
 const remove = async (id: number) => {
   const result = await PrivateInstance(`/api/url/${id}`, {
     method: "delete",
